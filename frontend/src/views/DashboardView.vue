@@ -196,7 +196,7 @@ function logout(): void {
         </button>
       </div>
       <div class="credit-footer>
-          Created by <strong style="color: #3b82f6;">John Doe</strong> | Completely for Free
+          Created by <strong style="color: #3b82f6;">Wei Zhu</strong> | Completely for Free
       </footer>
 
     </template>
