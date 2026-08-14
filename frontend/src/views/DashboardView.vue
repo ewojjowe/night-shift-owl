@@ -195,7 +195,7 @@ function logout(): void {
           {{ resetConfirm ? "Click again to confirm reset" : "Reset all progress" }}
         </button>
       </div>
-      <div class="credit-footer>
+      <div class="credit-footer">
           Created by <strong>Wei Zhu</strong> | Completely for Free
       </div>
 
