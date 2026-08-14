@@ -32,7 +32,7 @@ services:
         value: '["https://night-shift-app.onrender.com"]'  # update to your Static Site URL
 
   # --- Frontend: Vue 3 + Vite (Static Site) --------------------------------
-  - type: static
+  - type: web
     plan: free
     name: night-shift-app
     env: static
