@@ -853,3 +853,7 @@ table.timeline tr.highlight td {
   width: 100%;
   padding-top: 20px;
 }
+
+.credit-footer > strong {
+  color: var(--amber);
+}
