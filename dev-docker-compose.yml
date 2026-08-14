@@ -1,0 +1,73 @@
+# DEVELOPMENT Docker Compose — the full local stack with hot-reload.
+#
+# Bring it up with:  docker compose -f dev-docker-compose.yml up --build
+#
+# This runs everything locally for development: an unauthenticated MongoDB, the
+# FastAPI backend with `uvicorn --reload`, and the Vite dev server — all source
+# bind-mounted so edits reload instantly. It is NOT hardened; production uses the
+# separate docker-compose.yml (auth + TLS + reverse proxy, no frontend service —
+# the frontend is served by Vercel in production).
+#
+# Values use ${VAR:-default} substitution, so it runs with zero config; copy
+# .env.example to .env to override anything.
+
+services:
+  # --- MongoDB (local, no auth — dev only) ---------------------------------
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017" # published so you can inspect data with a local Mongo client
+    volumes:
+      - mongo_dev_data:/data/db
+    healthcheck:
+      # Backend waits for this to pass before starting, so it never races the DB.
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # --- FastAPI backend (hot-reload) ----------------------------------------
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017}
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-night_shift}
+      # Dev-only insecure secrets — production sets strong, distinct values.
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-only-insecure-access-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-only-insecure-refresh-secret-change-me}
+      ACCESS_EXPIRE_MINUTES: ${ACCESS_EXPIRE_MINUTES:-15}
+      REFRESH_EXPIRE_DAYS: ${REFRESH_EXPIRE_DAYS:-7}
+    volumes:
+      # Bind-mount source for hot-reload (uvicorn --reload). Editing a .py file on
+      # the host restarts the server in the container automatically.
+      - ./backend:/app
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  # --- Vue frontend (Vite dev server) --------------------------------------
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      # The browser (running on the host) reaches the backend on the published port.
+      VITE_API_BASE: ${VITE_API_BASE:-http://localhost:8000}
+    volumes:
+      # Bind-mount source for hot-reload...
+      - ./frontend:/app
+      # ...but keep node_modules inside the container (anonymous volume) so the
+      # host's platform/arch never clashes with the installed dependencies.
+      - /app/node_modules
+    depends_on:
+      - backend
+
+# Named volume for the dev database (kept separate from any prod volume).
+volumes:
+  mongo_dev_data:

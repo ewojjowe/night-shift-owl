@@ -1,0 +1,28 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "//": "Vercel build + hosting config for the Vue SPA. The recommended path is Render (see DEPLOYMENT.md). This file is kept for deploying the frontend to Vercel as an alternative. Set the project Root Directory to 'night-shift-app/frontend' in the Vercel dashboard.",
+
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": "vite",
+
+  "//rewrites": "SPA fallback: every path that isn't a real file serves index.html, so client-side routes like /login and /register work on direct hits and refreshes.",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+
+  "//headers": "Baseline security headers for the static frontend. Vercel already provides HTTPS/TLS and HSTS on its domains; these harden the rest.",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ]
+}

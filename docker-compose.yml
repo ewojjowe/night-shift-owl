@@ -1,0 +1,113 @@
+# SELF-HOSTED production Docker Compose — backend + database host.
+#
+# NOTE: The recommended production path is Render + MongoDB Atlas (see DEPLOYMENT.md).
+# This file is for self-hosted deployment on your own VM/server as an alternative.
+#
+#   docker compose up -d --build      # (this file is the default compose file)
+#
+# In production the Vue frontend is served by Vercel, so there is NO frontend
+# service here — only the API and its database, fronted by Caddy for automatic
+# HTTPS. Hardening vs. dev: MongoDB requires auth and is never published to the
+# host; the backend runs read-only, non-root, with no reload; secrets are REQUIRED
+# (the ${VAR:?...} syntax refuses to start if they're unset — no insecure defaults).
+#
+# Provide values via a .env file next to this one (see .env.example) or the host's
+# secret manager.
+
+services:
+  # --- Caddy reverse proxy: TLS termination (#10) --------------------------
+  caddy:
+    image: caddy:2
+    restart: always
+    ports:
+      - "80:80"   # HTTP — Caddy redirects to HTTPS and serves ACME challenges
+      - "443:443" # HTTPS — automatic Let's Encrypt certificate
+    environment:
+      # Consumed by the Caddyfile: your API's public domain + an ACME contact email.
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN to your backend domain, e.g. api.example.com}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL for Let's Encrypt notifications}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Persist issued certificates so restarts don't re-request them (rate limits!).
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    networks:
+      - web
+
+  # --- FastAPI backend -----------------------------------------------------
+  backend:
+    build: ./backend
+    image: night-shift-backend:${IMAGE_TAG:-latest} # pin a tag per release for clean rollbacks
+    restart: always
+    environment:
+      # Full authenticated connection string, e.g.
+      #   mongodb://appuser:pass@mongo:27017/night_shift?authSource=night_shift
+      MONGO_URI: ${MONGO_URI:?set MONGO_URI (authenticated connection string)}
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-night_shift}
+      # Strong, DISTINCT secrets — generate with: python -c "import secrets;print(secrets.token_urlsafe(48))"
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?set a strong JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set a strong JWT_REFRESH_SECRET}
+      ACCESS_EXPIRE_MINUTES: ${ACCESS_EXPIRE_MINUTES:-15}
+      REFRESH_EXPIRE_DAYS: ${REFRESH_EXPIRE_DAYS:-7}
+      # JSON array of allowed browser origins — your Vercel production URL, e.g.
+      #   ["https://night-shift.vercel.app"]
+      CORS_ORIGINS: ${CORS_ORIGINS:?set CORS_ORIGINS as a JSON array of your Vercel origin(s)}
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"] # no --reload
+    # Hardening: immutable root filesystem, a writable tmpfs only where needed, and
+    # no ability to gain new privileges. The app writes nothing to disk at runtime.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - web   # reachable by Caddy
+      - db    # reachable to Mongo
+
+  # --- MongoDB (auth required, never exposed to the host) ------------------
+  mongo:
+    image: mongo:7
+    restart: always
+    # NOTE: no `ports:` mapping — Mongo is reachable ONLY by the backend over the
+    # private `db` network, never from the host or internet.
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?set MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set MONGO_ROOT_PASSWORD}
+    command: ["mongod", "--auth"]
+    volumes:
+      - mongo_data:/data/db
+      # Optional: enable in-transit TLS (recommended when Mongo runs on a separate
+      # host). Mount a PEM and add: --tlsMode requireTLS --tlsCertificateKeyFile ...
+      # See DEPLOYMENT.md § "Self-hosted MongoDB". On a single host the private `db`
+      # network already keeps traffic off the wire.
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - db
+
+# Two networks so the database is isolated from the public edge: Caddy sits on
+# `web` only, Mongo on `db` only, and the backend bridges the two.
+networks:
+  web:
+  db:
+    internal: true # `db` has no route to the outside world at all
+
+volumes:
+  mongo_data:
+  caddy_data:
+  caddy_config:

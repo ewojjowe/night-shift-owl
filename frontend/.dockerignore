@@ -1,0 +1,5 @@
+# node_modules is installed inside the image / its own volume, never copied from host.
+node_modules
+dist
+.env
+*.log
