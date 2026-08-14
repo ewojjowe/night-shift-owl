@@ -46,7 +46,7 @@
         </div>
         <div class="social-links">
           <a href="https://github.com/ewojjowe" target="_blank" aria-label="GitHub">GitHub</a>
-          <a href="www.linkedin.com/in/john-wilfred-montilde" target="_blank" aria-label="LinkedIn">LinkedIn</a>
+          <a href="https://www.linkedin.com/in/john-wilfred-montilde/" target="_blank" aria-label="LinkedIn">LinkedIn</a>
         </div>
       </footer>
 
