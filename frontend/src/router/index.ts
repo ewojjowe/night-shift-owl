@@ -31,6 +31,11 @@ const router = createRouter({
       component: () => import("@/views/RegisterView.vue"),
       meta: { publicOnly: true },
     },
+    {
+      path: "/welcome",
+      name: "welcome",
+      component: () => import("@/views/LandingView.vue"),
+    },
   ],
 });
 
@@ -48,7 +53,7 @@ router.beforeEach((to) => {
   const isLoggedIn = !!auth.token;
 
   if (to.meta.requiresAuth && !isLoggedIn) {
-    return { name: "login" };
+    return { name: "welcome" };
   }
   if (to.meta.publicOnly && isLoggedIn) {
     return { name: "dashboard" };
