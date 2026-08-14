@@ -32,11 +32,12 @@ services:
         value: '["https://night-shift-app.onrender.com"]'  # update to your Static Site URL
 
   # --- Frontend: Vue 3 + Vite (Static Site) --------------------------------
-  - type: web
+  - type: static
     plan: free
     name: night-shift-app
+    env: static
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    publishPath: dist
     rootDir: night-shift-app/frontend
     branch: main
     routes:
@@ -45,4 +46,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE
-        value: https://night-shift-backend.onrender.com  # update to your Web Service URL
+        value: https://night-shift-backend.onrender.com # update to your Web Service URL
