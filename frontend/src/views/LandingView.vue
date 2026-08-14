@@ -1,3 +1,5 @@
+<script setup lang="ts">
+</script>
 <template>
   <div class="landing">
     <div class="landing-inner">
@@ -9,7 +11,7 @@
         <p class="landing-summary">
           A weekly study planner built for people who work nights. Pick up where
           you left off each day with a rotating curriculum that fits around your
-          shift — no deadlines, no pressure.
+          shift - no deadlines, no pressure.
         </p>
         <div class="landing-cta">
           <router-link to="/login" class="btn btn-amber">Sign in</router-link>
@@ -21,8 +23,8 @@
         <div class="feature-card">
           <div class="feature-icon">📅</div>
           <h3 class="display">Weekly curriculum</h3>
-          <p>Seven topics rotate through the week — from math and algorithms to
-            system design and AI — so you always have something fresh to study.</p>
+          <p>Seven topics rotate through the week - from math and algorithms to
+            system design and AI - so you always have something fresh to study.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🌙</div>
@@ -43,9 +45,8 @@
           Created by <strong>Wei Zhu</strong> | Completely for Free
         </div>
         <div class="social-links">
-          <a href="#" aria-label="GitHub">GitHub</a>
-          <a href="#" aria-label="Twitter / X">Twitter / X</a>
-          <a href="#" aria-label="LinkedIn">LinkedIn</a>
+          <a href="https://github.com/ewojjowe" target="_blank" aria-label="GitHub">GitHub</a>
+          <a href="www.linkedin.com/in/john-wilfred-montilde" target="_blank" aria-label="LinkedIn">LinkedIn</a>
         </div>
       </footer>
 
