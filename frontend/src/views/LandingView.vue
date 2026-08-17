@@ -42,13 +42,15 @@
 
       <footer class="landing-footer">
         <div class="credit-footer">
-          Created by <strong>Wei Zhu</strong> | Completely for Free |
-          Love this tool? Support its continuous improvement!
-          <a href="https://buymeacoffee.com/weizhu" target="_blank">Buy me a ☕</a>
+          Created by <strong>Wei Zhu</strong> | Completely for Free
         </div>
         <div class="social-links">
           <a href="https://github.com/ewojjowe" target="_blank" aria-label="GitHub">GitHub</a>
           <a href="https://www.linkedin.com/in/john-wilfred-montilde/" target="_blank" aria-label="LinkedIn">LinkedIn</a>
+        </div>
+        <div class="credit-footer">
+          Love this tool? Support its continuous improvement!
+          <a href="https://buymeacoffee.com/weizhu" target="_blank">Buy me a ☕</a>
         </div>
       </footer>
 
