@@ -6,12 +6,12 @@
 
       <header class="landing-hero">
         <div class="owl-icon">🦉</div>
-        <div class="eyebrow mono">Night Shift Roadmap</div>
+        <div class="eyebrow mono">Night Shift Roadmap <br />(AI and ML engineering essentials with System Design)</div>
         <h1 class="display">Learn at your own pace,<br />on your own schedule.</h1>
         <p class="landing-summary">
-          A weekly study planner built for people who work nights. Pick up where
-          you left off each day with a rotating curriculum that fits around your
-          shift - no deadlines, no pressure.
+          A weekly study planner built for people with busy or unpredictable schedules.
+          Pick up where you left off each day with a rotating curriculum that fits around
+          your routine, no deadlines, no pressure.
         </p>
         <div class="landing-cta">
           <router-link to="/login" class="btn btn-amber">Sign in</router-link>
